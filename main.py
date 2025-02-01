@@ -9,4 +9,4 @@ app = FastAPI()
 
 @app.post("/scrape")
 def run_scraper(settings: settings.ScraperSettings):
-    scraper = 
+    pass

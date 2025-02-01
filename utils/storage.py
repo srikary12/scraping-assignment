@@ -33,5 +33,6 @@ class JSONStorage(Storage):
                 updated_count += 1
         
         with open(self.filename, 'w') as f:
-            json.dump([p.dict() for p in existing_products,values()], f, indent=4)
+            json.dump([p.model_dump() for p in existing_products.values()], f, indent=4)
         return updated_count
+    
