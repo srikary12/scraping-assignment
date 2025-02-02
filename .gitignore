@@ -4,4 +4,3 @@ __pycache__/*
 external_services/__pycache__/*
 schemas/__pycache__/*
 utils/__pycache__/*
-images/*
