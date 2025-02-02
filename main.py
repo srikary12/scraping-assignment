@@ -2,6 +2,8 @@ from fastapi import FastAPI, Depends
 from bs4 import BeautifulSoup
 from tenacity import retry, wait_fixed, stop_after_attempt
 import requests
+import os
+import uuid
 
 from .schemas import Product, ScraperSettings
 from .utils import JSONStorage, PriceCache, validate_api_key
@@ -16,13 +18,14 @@ class WebScraper:
         storage: JSONStorage,
         notifier: ConsoleNotification,
         cache: PriceCache,
-        base_url: str = "https://dentalstall.com/shop/page/"
+        base_url: str = "https://dentalstall.com/shop/page/",
     ):
         self.settings = settings
         self.storage = storage
         self.notifier = notifier
         self.cache = cache
         self.base_url = base_url
+        self.image_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images')
     
     @retry(wait=wait_fixed(5), stop=stop_after_attempt(3))
     def _scrape_page(self, page: int) -> bytes:
@@ -40,9 +43,26 @@ class WebScraper:
             price_str = product_div.find('span', class_='woocommerce-Price-amount').text.strip()
             price = float(price_str.replace('₹', ''))
             image = product_div.find('img')['data-lazy-src']
-            products.append(Product(name=name, price=price, image=image))
+            image_path = self._download_image(image)
+            products.append(Product(name=name, price=price, image=image_path))
         return products
     
+    def _download_image(self, url: str) -> str:
+        response = requests.get(url)
+        if response.status_code == 200:
+            image_name = os.path.basename(url)
+            if not image_name or image_name == '/':
+                image_name = f"image_{uuid.uuid4()}.jpg"
+            else:
+                name, ext = os.path.splitext(image_name)
+                image_name = f"{name}_{uuid.uuid4()}{ext}"
+            image_path = os.path.join(self.image_dir, image_name)
+            with open(image_path, 'wb') as f:
+                f.write(response.content)
+            return image_path
+        else:
+            raise Exception(f"Failed to download image from {url}")
+
     def scrape(self) -> None:
         products_to_update = []
         for page in range(1, self.settings.page_limit + 1):
