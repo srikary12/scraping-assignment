@@ -1,21 +1,22 @@
 from abc import ABC, abstractmethod
-from models import product
 import json
+
+from ..schemas import Product
 
 class Storage(ABC):
     @abstractmethod
-    def bulk_update(self, products:list[product.Product]) -> int:
+    def bulk_update(self, products:list[Product]) -> int:
         pass
 
 class JSONStorage(Storage):
     def __init__(self, filename: str = "db.json"):
         self.filename = filename
 
-    def _load_products(self) -> dict[str, product.Product]:
+    def _load_products(self) -> dict[str, Product]:
         try:
             with open(self.filename, 'r') as f:
                 data = json.load(f)
-                return {p['name']: product.Product(**p) for p in data}
+                return {p['name']: Product(**p) for p in data}
         except FileNotFoundError:
             return {}
     
