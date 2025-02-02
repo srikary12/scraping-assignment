@@ -43,8 +43,7 @@ class WebScraper:
             price_str = product_div.find('span', class_='woocommerce-Price-amount').text.strip()
             price = float(price_str.replace('₹', ''))
             image = product_div.find('img')['data-lazy-src']
-            image_path = self._download_image(image)
-            products.append(Product(name=name, price=price, image=image_path))
+            products.append(Product(name=name, price=price, image=image))
         return products
     
     def _download_image(self, url: str) -> str:
@@ -72,6 +71,8 @@ class WebScraper:
                 for product in scraped_products:
                     cached_price = self.cache.get(product.name)
                     if cached_price is None or cached_price.decode() != product.price:
+                        image_path = self._download_image(product.image)
+                        product.image = image_path
                         products_to_update.append(product)
                         self.cache.set(product.name, product.price)
             except Exception as e:
