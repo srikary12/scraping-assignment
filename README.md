@@ -106,5 +106,4 @@ INFO:scraping-assignment.external_services.notification:Successfully updated 5 p
 ![Image 1](demo_images/demo1.png)
 ![Image 2](demo_images/demo2.png)
 ![Image 3](demo_images/demo3.png)
-![Image 3](demo_images/demo3.png)
 ![Image 3](demo_images/demo4.png)
